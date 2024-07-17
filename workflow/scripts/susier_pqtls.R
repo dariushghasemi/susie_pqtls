@@ -3,50 +3,20 @@
 #------      Read GWAS     ------#
 #--------------------------------#
 
-#seqid <- "seq.3054.3"
-#locus <- "16_69449233_73516227"
+seqid <- "seq.3054.3"
+locus <- "16_69549233_73416227" #"16_69449233_73516227"
 
 # GWAS file
-#file_pwas <- paste0("/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/seq.3054.3/16_69449233_73516227.regenie")
-file_pwas <- paste0("/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/seq.12593.33/19_54219624_54427869.regenie")
+path_base <- "/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/"
+file_pwas <- paste0(path_base, seqid, "/", locus, ".regenie")
+file_dose <- paste0(path_base, seqid, "/", locus, "_dosage.raw")
+
+#file_pwas <- paste0("/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/seq.12593.33/19_54219624_54427869.regenie")
 
 pwas <- data.table::fread(file_pwas)
+dose <- data.table::fread(file_dose)
 
 
-#--------------------------------#
-#------      Read PGEN     ------#
-#--------------------------------#
-
-# File paths
-pgen_path <- "/exchange/healthds/pQTL/INTERVAL/Genetic_QC_files/pgen/qc_recoded_harmonised/impute_recoded_selected_sample_filter_hq_var_new_id_alleles_19.pgen"
-pvar_path <- "/exchange/healthds/pQTL/INTERVAL/Genetic_QC_files/pgen/qc_recoded_harmonised/impute_recoded_selected_sample_filter_hq_var_new_id_alleles_19.pvar"
-psam_path <- "/exchange/healthds/pQTL/INTERVAL/Genetic_QC_files/pgen/qc_recoded_harmonised/impute_recoded_selected_sample_filter_hq_var_new_id_alleles_19.psam"
-
-# Read the PVAR and PSAM files
-pvar <- data.table::fread(pvar_path, header = TRUE)
-psam <- data.table::fread(psam_path, header = TRUE)
-
-# Initialize PGEN object
-pvar_obj <- pgenlibr::NewPvar(pvar_path)
-pgen <- pgenlibr::NewPgen(pgen_path, pvar = pvar_obj)
-
-# Extract genotype data from the PGEN file
-num_samples <- nrow(psam)
-num_variants <- nrow(pvar)
-variant_subset <- c(1:num_variants)
-
-# Read genotype matrix
-geno_mat <- pgenlibr::ReadList(pgen, variant_subset, meanimpute = FALSE)
-if (length(which(apply(geno_mat, 1, function(row) any(is.na(row))))) != 0) {
-  stop("NAs are present!")
-}
-
-# Convert geno_mat to numeric matrix
-geno_mat <- as.matrix(geno_mat)
-geno_mat <- apply(geno_mat, 2, as.numeric)
-
-rownames(geno_mat) <- as.character(psam$IID)
-colnames(geno_mat) <- as.character(pvar$ID)
 
 
 #--------------------------------#
@@ -54,10 +24,10 @@ colnames(geno_mat) <- as.character(pvar$ID)
 #--------------------------------#
 
 # compute in-sample LD from the genotype/dosages
-# cor_matrix <- dosage %>% 
-#   select(- c(IID, FID, PAT, MAT, SEX, PHENOTYPE)) %>%
-#   #summarise(across(where(is.numeric), ~ sum(is.na(.x))))
-#   cor(use = "pairwise.complete.obs") #"complete.obs"
+cor_matrix <- dose[,1:100] %>%
+  select(- c(IID, FID, PAT, MAT, SEX, PHENOTYPE)) %>%
+  #summarise(across(where(is.numeric), ~ sum(is.na(.x))))
+  cor(use = "pairwise.complete.obs") #"complete.obs"
 
 
 # convert2matrix <- function(df){
@@ -94,22 +64,23 @@ colnames(geno_mat) <- as.character(pvar$ID)
 # script: /scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/02_subset_gwas.sh
 # read ld created by plink2 r-unphased
 #file_ld <- "/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/lz_plt/16_69449233_73516227.ld"
-file_ld <- "/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/seq.12593.33/19_54219624_54427869.unphased.vcor1"
+#file_ld <- "/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/seq.12593.33/19_54219624_54427869.unphased.vcor1"
+file_ld <- "/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/seq.3054.3/16_69449233_73516227.ld"
 
-file_ld_snps <- paste0(file_ld, ".vars")
-
-ld_raw  <- data.table::fread(file_ld)
-ld_snps <- data.table::fread(file_ld_snps, header = F)
-
-colnames(ld_raw) <- ld_snps %>% unlist()
-rownames(ld_raw) <- ld_snps %>% unlist() %>% unique()
-
-# subset LD to only snps in PWAS
-col_snps <- which(colnames(ld_raw) %in% pwas$SNPID)
-row_snps <- which(rownames(ld_raw) %in% pwas$SNPID)
-
-# to be used by susie
-ld_matrix <- ld_raw[row_snps] %>% select(pwas$SNPID) %>% as.matrix()
+# file_ld_snps <- paste0(file_ld, ".vars")
+# 
+# ld_raw  <- data.table::fread(file_ld)
+# ld_snps <- data.table::fread(file_ld_snps, header = F)
+# 
+# colnames(ld_raw) <- ld_snps %>% unlist()
+# rownames(ld_raw) <- ld_snps %>% unlist() %>% unique()
+# 
+# # subset LD to only snps in PWAS
+# col_snps <- which(colnames(ld_raw) %in% pwas$SNPID)
+# row_snps <- which(rownames(ld_raw) %in% pwas$SNPID)
+# 
+# # to be used by susie
+# ld_matrix <- ld_raw[row_snps] %>% select(pwas$SNPID) %>% as.matrix()
 
 
 
@@ -133,7 +104,7 @@ pwas %>%
 
 #------------#
 
-#n_sample <- nrow(dosage)
+n_sample <- nrow(dose)
 #var_prot <- somagen %>% summarise_at(seqid, ~ sd(.x, na.rm = T))
 
 set.seed(777)
@@ -142,8 +113,8 @@ fit_model <- susieR::susie_rss(
   bhat = pwas$BETA,
   shat = pwas$SE,
   #z = (pwas$BETA/pwas$SE)/10,
-  n = 9251,
-  R = ld_matrix,
+  n = n_sample,
+  R = cor_matrix,
   var_y = 1,
   L = 10, 
   estimate_residual_variance = F,

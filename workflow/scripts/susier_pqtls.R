@@ -14,7 +14,7 @@ file_dose <- paste0(path_base, seqid, "/", locus, "_dosage.raw")
 #file_pwas <- paste0("/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/seq.12593.33/19_54219624_54427869.regenie")
 
 pwas <- data.table::fread(file_pwas)
-dose <- data.table::fread(file_dose)
+dose <- data.table::fread(file_dose, data.table = F)
 
 
 
@@ -28,6 +28,7 @@ cor_matrix <- dose[,1:100] %>%
   select(- c(IID, FID, PAT, MAT, SEX, PHENOTYPE)) %>%
   #summarise(across(where(is.numeric), ~ sum(is.na(.x))))
   cor(use = "pairwise.complete.obs") #"complete.obs"
+
 
 
 # convert2matrix <- function(df){

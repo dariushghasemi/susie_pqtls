@@ -6,6 +6,9 @@
 seqid <- "seq.3054.3"
 locus <- "16_69549233_73416227" #"16_69449233_73516227"
 
+seqid <- "seq.6556.5"
+locus <- "6_45529745_46840815"
+
 # GWAS file
 path_base <- "/scratch/dariush.ghasemi/projects/pqtl_pipeline_finemap/glm_model/out/"
 file_pwas <- paste0(path_base, seqid, "/", locus, ".regenie")

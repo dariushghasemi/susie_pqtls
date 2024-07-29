@@ -47,3 +47,10 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+
+test/
+cojo/
+glm_model/
+lz_plt/
+plink/

@@ -9,4 +9,4 @@ Ready to start working on the pipe.
 
 Writing the method and part of the results of conditional analysis for the READMe passed to MVP (Tue, 20:02, 6-Aug-24).
 
-Finish COJO comparison and getting ready for SUSIE fine-mapping (Wed, 19:00, 7-Aug-24). 
+Finished COJO comparison and getting ready for SUSIE fine-mapping (Wed, 19:00, 7-Aug-24). 
